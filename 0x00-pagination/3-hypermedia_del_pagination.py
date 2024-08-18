@@ -43,25 +43,19 @@ class Server:
         """
         implementing delete-resilience
         """
-        assert type(index) == int
-        assert type(page_size) == int
-        assert index >= 0
-        assert index < len(self.indexed_dataset())
+		dataset = self.indexed_dataset()
+        assert index is not None and 0 <= index < len(dataset)
 
-        csv = self.indexed_dataset()
-        data = []
-
-        next_index = index
-
-        for item in range(page_size):
-            while not csv.get(next_index):
-                next_index += 1
-            data.append(csv.get(next_index))
-            next_index += 1
-
+        data: List[List] = []
+        current_index = index
+        while len(data) < page_size and current_index < len(dataset):
+            if current_index in dataset:
+                data.append(dataset[current_index])
+            current_index += 1
+        next_index = current_index if current_index < len(dataset) else None
         return {
             "index": index,
-            "data": data,
-            "page_size": page_size,
-            "next_index": next_index
-            }
+            "next_index": next_index,
+            "page_size": len(data),
+            "data": data
+        }
